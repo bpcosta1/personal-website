@@ -1,0 +1,46 @@
+---
+import { Icon } from 'astro-icon/components';
+---
+
+<header class="flex items-center justify-between mb-16 font-mono text-md">
+    <nav class="flex gap-4">
+        <a href="/" class="hover:underline transition-all hover:text-brand"
+            >Me</a
+        >
+        <a href="/uses" class="hover:underline transition-all hover:text-brand"
+            >Uses</a
+        >
+        <a href="/posts" class="hover:underline transition-all hover:text-brand"
+            >Posts</a
+        >
+    </nav>
+    <div class="flex gap-4 items-center text-text-main">
+        <a
+            href="https://github.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-brand"
+            aria-label="See my GitHub profile"
+        >
+            <Icon name="simple-icons:github" class="w-5 h-5" />
+        </a>
+        <a
+            href="https://linkedin.com/in/bpcosta1"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-brand"
+            aria-label="See my LinkedIn profile"
+        >
+            <Icon name="simple-icons:linkedin" class="w-5 h-5" />
+        </a>
+        <a
+            href="https://www.credly.com/users/bpcosta1/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-brand"
+            aria-label="See my certifications on Credly"
+        >
+            <Icon name="simple-icons:credly" class="w-5 h-5" />
+        </a>
+    </div>
+</header>
