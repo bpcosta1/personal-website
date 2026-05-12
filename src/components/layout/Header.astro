@@ -1,25 +1,23 @@
 ---
 import { Icon } from 'astro-icon/components';
+import InteractiveHeader from './InteractiveHeader.svelte';
+import Navigation from './Navigation.svelte';
+
+const pathname = Astro.url.pathname;
 ---
 
-<header class="flex items-center justify-between mb-16 font-mono text-md">
-    <nav class="flex gap-4">
-        <a href="/" class="hover:underline transition-all hover:text-brand"
-            >Me</a
-        >
-        <a href="/uses" class="hover:underline transition-all hover:text-brand"
-            >Uses</a
-        >
-        <a href="/posts" class="hover:underline transition-all hover:text-brand"
-            >Posts</a
-        >
-    </nav>
+<InteractiveHeader
+    client:load
+    transition:name="header"
+    transition:persist="header"
+>
+    <Navigation client:load initialPath={pathname} />
     <div class="flex gap-4 items-center text-text-main">
         <a
-            href="https://github.com"
+            href="https://github.com/bpcosta1"
             target="_blank"
             rel="noopener noreferrer"
-            class="hover:text-brand"
+            class="text-text-main hover:text-brand transition-all hover:-rotate-12 duration-200"
             aria-label="See my GitHub profile"
         >
             <Icon name="simple-icons:github" class="w-5 h-5" />
@@ -28,19 +26,19 @@ import { Icon } from 'astro-icon/components';
             href="https://linkedin.com/in/bpcosta1"
             target="_blank"
             rel="noopener noreferrer"
-            class="hover:text-brand"
+            class="text-text-main hover:text-brand transition-all hover:rotate-12 duration-200"
             aria-label="See my LinkedIn profile"
         >
             <Icon name="simple-icons:linkedin" class="w-5 h-5" />
         </a>
         <a
-            href="https://www.credly.com/users/bpcosta1/"
+            href="https://www.credly.com/users/bpcosta1"
             target="_blank"
             rel="noopener noreferrer"
-            class="hover:text-brand"
+            class="text-text-main hover:text-brand transition-all hover:-rotate-12 duration-200"
             aria-label="See my certifications on Credly"
         >
             <Icon name="simple-icons:credly" class="w-5 h-5" />
         </a>
     </div>
-</header>
+</InteractiveHeader>

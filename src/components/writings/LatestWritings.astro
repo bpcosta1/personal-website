@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+
+const allWritings = await getCollection('writings', ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const latestWritings = allWritings
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 5);
+---
+
+<div class="mt-8">
+  <h2 class="text-2xl font-bold mb-6 text-white">Latest Writings</h2>
+  <div class="space-y-4">
+    {
+      latestWritings.map((writing) => (
+        <article class="flex justify-between items-center group">
+          <a
+            href={`/writings/${writing.id}`}
+            class="text-lg text-white group-hover:text-brand transition-colors"
+          >
+            {writing.data.title}
+          </a>
+          <div class="flex items-center gap-4 text-sm font-mono text-text-main/60">
+            <span>{writing.data.readTime} min read</span>
+            <time>
+              {writing.data.date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              })}
+            </time>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+  <div class="mt-6">
+    <a href="/posts" class="text-brand hover:underline font-mono text-sm"
+      >View all posts &rarr;</a
+    >
+  </div>
+</div>

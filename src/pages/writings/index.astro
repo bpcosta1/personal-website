@@ -1,0 +1,27 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import ListItem from '../../components/writings/ListItem.astro';
+
+const writings = await getCollection('writings', ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+writings.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<Layout title="Writings">
+  <section class="space-y-8">
+    <div class="mb-12">
+      <h1 class="text-5xl font-bold mb-2">Writings</h1>
+      <p class="text-text-main/80">
+        Some writings of my projects about networking, cloud architecture, and
+        web development.
+      </p>
+    </div>
+
+    <div class="space-y-6">
+      {writings.map((writing) => <ListItem writing={writing} />)}
+    </div>
+  </section>
+</Layout>

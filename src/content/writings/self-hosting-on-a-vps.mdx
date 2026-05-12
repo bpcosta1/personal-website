@@ -1,0 +1,273 @@
+---
+title: "Self-Hosting Daily Tools on a VPS"
+date: 2026-05-11
+description: "How I configured a Hetzner VPS to run my daily tools and web projects using Docker, Traefik, and Tailscale."
+readTime: 8
+draft: true
+tags: ["Self-Hosting", "Docker", "Tailscale", "Traefik", "Privacy", "CI/CD"]
+---
+
+import { Icon } from 'astro-icon/components';
+
+For a long time, I relied heavily on big tech companies to manage my digital life. From password managers to cloud storage and ad-blockers, everything was scattered across different subscriptions and proprietary platforms. Recently, I decided it was time to take back control, consolidate my tools, and build my own self-hosted infrastructure. 
+
+The goal was simple: rent a single VPS (Virtual Private Server), containerize everything, and make it absolutely bulletproof from a security standpoint. 
+
+If you want to replicate this setup, this post is a step-by-step look at my current architecture, the services I run, and how you can build it too.
+
+---
+
+## 🔒 Phase 1: Server Hardening & Foundation
+
+Before running any services, the foundation must be secure. A fresh VPS exposed to the internet is probed by bots within minutes. Here is the hardening checklist I followed on my Hetzner Ubuntu server:
+
+1. **User Management:** Created a non-root user with `sudo` privileges. I migrated my SSH keys with strict permissions (`700` for `.ssh` directory, `600` for `authorized_keys`).
+2. **SSH Hardening:** Edited `/etc/ssh/sshd_config` to explicitly disable `PermitRootLogin` and `PasswordAuthentication`.
+3. **Firewall:** Configured the Hetzner Cloud Firewall with strict inbound rules limited to TCP 22 (SSH), TCP 80 (HTTP), and TCP 443 (HTTPS).
+4. **Intrusion Prevention:** Installed **Fail2Ban** to automatically ban IPs attempting brute-force attacks on the SSH port.
+5. **Container Engine:** Installed Docker Engine and Docker Compose, adding my non-root user to the `docker` group. I also created a dedicated external network called `proxy-network` to ensure strict routing.
+
+```bash
+docker network create proxy-network
+
+```
+
+---
+
+## 🏗️ Phase 2: The Core Network (Traefik & Tailscale)
+
+Installing apps directly onto a host OS is a recipe for dependency hell, so every service lives in its own isolated Docker container. To manage how traffic reaches these containers, I use **Traefik**.
+
+Traefik listens to the Docker socket and dynamically routes traffic based on container labels. It also handles SSL certificates automatically via Let's Encrypt using a **Cloudflare DNS challenge**. This means I get valid HTTPS certificates even for private subdomains that aren't exposed to the public internet.
+
+```yaml
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy-network
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOCKER_API_VERSION=1.44
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik-data:/letsencrypt
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+      - "--entryPoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--certificatesresolvers.myresolver.acme.dnschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.myresolver.acme.email=${ACME_EMAIL}"
+
+networks:
+  proxy-network:
+    external: true
+
+```
+
+### The "Zero Trust" Mesh VPN
+
+In the past, I used WireGuard (wg-easy) to secure my traffic. While great, I eventually migrated to **Tailscale** to achieve a true "Zero Trust" mesh network.
+
+Instead of exposing my private tools to the public web, I point their Cloudflare DNS records strictly to my server's internal Tailscale IP (`100.x.x.x`). To the outside world, these subdomains don't resolve to anything useful. But for me, with my Tailscale app running, they load instantly with a secure, valid HTTPS connection.
+
+---
+
+## 🧰 Phase 3: The Private Self-Hosted Stack
+
+With the network secured, I deployed my daily drivers. Here is what is running behind the invisible wall:
+
+### 1. <a href="https://github.com/dani-garcia/vaultwarden" class="text-white decoration-white no-underline hover:underline">Vaultwarden <Icon name="lucide:globe" class="inline w-5 h-5 ml-1 pb-1" /></a>
+
+* **Why I use it:** I wanted to escape password manager subscriptions while retaining premium features.
+* **What it is:** A lightweight, self-hosted server fully compatible with official Bitwarden clients. Because its DNS points to the Tailscale IP, an attacker can't even reach the login page.
+
+```yaml
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      - DOMAIN=https://vault.${DOMAIN}
+    volumes:
+      - ./vw-data:/data
+    networks:
+      - proxy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vaultwarden.rule=Host(`vault.${DOMAIN}`)"
+      - "traefik.http.routers.vaultwarden.entrypoints=websecure"
+      - "traefik.http.routers.vaultwarden.tls.certresolver=myresolver"
+      - "traefik.http.services.vaultwarden.loadbalancer.server.port=80"
+
+networks:
+  proxy-network:
+    external: true
+
+```
+
+### 2. <a href="https://syncthing.net/" class="text-white decoration-white no-underline hover:underline">Syncthing <Icon name="lucide:globe" class="inline w-5 h-5 ml-1 pb-1" /></a>
+
+* **Why I use it:** To sync my [Obsidian](https://obsidian.md) vault across my phone, laptop, and server without paying for Obsidian Sync or other external service.
+* **What it is:** A decentralized P2P file synchronization tool. The VPS acts as an "always-on" node, so my phone can pull the latest files even if my laptop is closed.
+
+```yaml
+services:
+  syncthing:
+    image: lscr.io/linuxserver/syncthing:latest
+    container_name: syncthing
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Lisbon
+    volumes:
+      - ./sync-data:/config
+    ports:
+      - "22000:22000/tcp"
+      - "22000:22000/udp"
+      - "21027:21027/udp"
+    restart: unless-stopped
+    networks:
+      - proxy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.syncthing.rule=Host(`sync.${DOMAIN}`)"
+      - "traefik.http.routers.syncthing.entrypoints=websecure"
+      - "traefik.http.routers.syncthing.tls.certresolver=myresolver"
+      - "traefik.http.services.syncthing.loadbalancer.server.port=8384"
+
+networks:
+  proxy-network:
+    external: true
+
+```
+
+### 3. <a href="https://github.com/lukegus/termix" class="text-white decoration-white no-underline hover:underline">Termix <Icon name="lucide:globe" class="inline w-5 h-5 ml-1 pb-1" /></a>
+
+* **Why I use it:** SSH-ing into a server from a mobile device is usually a clunky experience.
+* **What it is:** Termix acts as a centralized, web-based SSH client hosted directly on the VPS. Whenever I need to run a command on the go, I open my browser, load Termix via the VPN, and have a beautiful terminal at my fingertips.
+
+```yaml
+services:
+  termix:
+    image: ghcr.io/lukegus/termix:latest
+    container_name: termix
+    restart: unless-stopped
+    environment:
+      - PORT=5674
+    volumes:
+      - ./termix-data:/app/data
+    networks:
+      - proxy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.termix.rule=Host(`termix.${DOMAIN}`)"
+      - "traefik.http.routers.termix.entrypoints=websecure"
+      - "traefik.http.routers.termix.tls.certresolver=myresolver"
+      - "traefik.http.services.termix.loadbalancer.server.port=5674"
+
+networks:
+  proxy-network:
+    external: true
+
+```
+
+### 4. <a href="https://github.com/AdguardTeam/AdGuardHome" class="text-white decoration-white no-underline hover:underline">AdGuard Home <Icon name="lucide:globe" class="inline w-5 h-5 ml-1 pb-1" /></a>
+
+* **Why I use it:** I hate ads and trackers, but installing ad-blockers on every device is tedious.
+* **What it is:** A private DNS sinkhole. By setting my Tailscale network to use the VPS as the global DNS resolver, AdGuard strips out ads and trackers at the network level before they even reach my screen.
+
+```yaml
+services:
+  adguardhome:
+    image: adguard/adguardhome:latest
+    container_name: adguardhome
+    restart: unless-stopped
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    volumes:
+      - ./work:/opt/adguardhome/work
+      - ./conf:/opt/adguardhome/conf
+    networks:
+      - proxy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adguard.rule=Host(`adguard.${DOMAIN}`)"
+      - "traefik.http.routers.adguard.entrypoints=websecure"
+      - "traefik.http.routers.adguard.tls.certresolver=myresolver"
+      - "traefik.http.services.adguard.loadbalancer.server.port=80"
+
+networks:
+  proxy-network:
+    external: true
+
+```
+
+### 5. <a href="https://www.portainer.io/" class="text-white decoration-white no-underline hover:underline">Portainer <Icon name="lucide:globe" class="inline w-5 h-5 ml-1 pb-1" /></a>
+
+* **Why I use it:** While I love the command line, sometimes it's faster to click a button.
+* **What it is:** A visual web UI to manage the Docker environment. I use it to quickly check container health, read live logs, and prune unused images.
+
+```yaml
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy-network
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - portainer_data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN}`)"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.routers.portainer.tls.certresolver=myresolver"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+
+volumes:
+  portainer_data:
+
+networks:
+  proxy-network:
+    external: true
+
+```
+
+---
+
+## 🌐 Phase 4: Public Projects & CI/CD
+
+While the core of the server is locked down for my private use, I also use this VPS to host my public web applications and landing pages securely behind Cloudflare.
+
+For these, I set up a fully automated **CI/CD pipeline using GitHub Actions**. The pipeline is configured in `.github/workflows/deploy.yml` to build multi-stage Docker images and push them to the GitHub Container Registry (GHCR). It then automatically SSHs into the VPS, pulls the latest images, and runs `docker compose up -d` for zero-downtime rolling deployments.
+
+## 📊 Phase 5: Observability & Backups
+
+To ensure everything runs smoothly, I maintain a production assurance stack:
+
+* **External Monitoring:** Uptime Robot monitors my public subdomains to track availability.
+* **Internal Observability:** A stack using Prometheus, Node Exporter, and Grafana tracks server metrics (CPU, RAM, network) internally.
+* **Backups:** Persistent Docker volumes are automatically backed up to an off-site Raspberry Pi NAS.
+
+## Wrapping Up
+
+Building this setup took some tweaking—especially getting Traefik to play nicely with Tailscale networks—but the result is incredibly satisfying. I now have a production-ready, air-tight environment that hosts my public projects via automated pipelines while keeping my digital life strictly private and under my control.

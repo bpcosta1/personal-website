@@ -3,22 +3,32 @@
 
 @theme {
   --color-brand: var(--color-amber-500);
-  
+
   --font-serif: "Source Serif 4", serif;
   --font-mono: "JetBrains Mono", monospace;
-  
+
   --color-background-dark: #1a1a1a;
   --color-text-main: var(--color-gray-300);
 }
 
 @layer base {
+  html {
+    @apply overflow-y-scroll overflow-x-hidden;
+  }
+
   body {
     @apply bg-background-dark text-text-main font-serif antialiased selection:bg-brand/30;
   }
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply text-white;
   }
-  
+
   a {
     @apply text-brand transition-colors;
   }

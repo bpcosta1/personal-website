@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import LatestPosts from '../components/posts/LatestPosts.astro';
+import LatestWritings from '../components/writings/LatestWritings.astro';
 ---
 
 <Layout title="Bruno Costa">
@@ -16,19 +16,20 @@ import LatestPosts from '../components/posts/LatestPosts.astro';
     </p>
     <p class="text-lg leading-relaxed text-justify">
       This is my little space on the internet, where I you can find <a
-        href="./posts"
-        class="hover:underline">my posts</a
+        href="./writings"
+        class="hover:underline">my writings</a
       > about my projects and other things I find interesting. You can also check
       out the
       <a href="./uses" class="hover:underline">tools and apps</a> I use on a daily
       basis.
     </p>
     <p class="text-lg leading-relaxed text-justify">
-      Feel free to reach out to me at <a href="mailto:me@bpcosta.com"
-        >me@bpcosta.com</a
+      Feel free to reach out to me at <a
+        href="mailto:bruno@bpcosta.com"
+        class="hover:underline">bruno@bpcosta.com</a
       >.
     </p>
   </section>
 
-  <LatestPosts />
+  <LatestWritings />
 </Layout>
