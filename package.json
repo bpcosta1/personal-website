@@ -26,5 +26,11 @@
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.107",
     "@tailwindcss/typography": "^0.5.19"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp"
+    ]
   }
 }
