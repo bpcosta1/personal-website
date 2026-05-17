@@ -6,11 +6,11 @@ services:
     networks:
       - proxy-network
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.personalwebsite.rule=Host(`bpcosta.com`, `www.bpcosta.com`)"
-      - "traefik.http.routers.personalwebsite.entrypoints=websecure"
-      - "traefik.http.routers.personalwebsite.tls.certresolver=myresolver"
-      - "traefik.http.services.personalwebsite.loadbalancer.server.port=80"
+      - traefik.enable=true
+      - traefik.http.routers.personalwebsite.rule=Host(`bpcosta.com`) || Host(`www.bpcosta.com`)
+      - traefik.http.routers.personalwebsite.entrypoints=websecure
+      - traefik.http.routers.personalwebsite.tls.certresolver=myresolver
+      - traefik.http.services.personalwebsite.loadbalancer.server.port=80
 
 networks:
   proxy-network:
