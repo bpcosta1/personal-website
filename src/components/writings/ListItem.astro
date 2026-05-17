@@ -11,25 +11,40 @@ const { writing } = Astro.props;
 <article
   class="border-l-2 border-brand/30 pl-4 py-1 hover:border-brand transition-colors"
 >
-  <a href={`/writings/${writing.id}`} class="block group">
+  <a href={`/writings/${writing.id.replace(/\/index$/, '')}`} class="block group">
     <h2
       class="text-2xl font-bold text-white group-hover:text-brand transition-colors"
     >
       {writing.data.title}
     </h2>
     <div
-      class="flex items-center gap-4 text-sm font-mono text-text-main/60 mb-2 mt-1"
+      class="flex flex-col gap-0.5 text-sm font-mono text-text-main/60 mb-2 mt-1"
     >
-      <span>{writing.data.readTime} min read</span>
-      <time>
-        {
-          writing.data.date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          })
-        }
-      </time>
+      <div class="flex items-center gap-4">
+        <span>{writing.data.readTime} min read</span>
+        <time>
+          {
+            writing.data.date.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })
+          }
+        </time>
+      </div>
+      {
+        writing.data.lastUpdated && (
+          <span class="italic text-xs">
+            Last updated: {
+              writing.data.lastUpdated.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              })
+            }
+          </span>
+        )
+      }
     </div>
     {
       writing.data.description && (

@@ -13,7 +13,7 @@ A personal website for Bruno Costa, built with modern web technologies and focus
 
 ## Architecture
 
-- `src/content/`: Contains MDX files for the "writings" collection.
+- `src/content/writings/`: Contains subdirectories for each post, following the folder-per-post pattern (e.g., `src/content/writings/my-post/index.mdx`). This allows storing images and other assets alongside the content.
 - `src/pages/`: Astro routes. Supports `.astro` and `.ts` files (e.g., `robots.txt.ts`).
 - `src/components/`: Reusable components, organized by category (e.g., `layout`, `writings`). Uses both Astro and Svelte.
 - `src/layouts/`: Base Astro layouts (e.g., `Layout.astro`).
@@ -58,12 +58,13 @@ The project is containerized using Docker.
 
 ### Styling
 - Use Tailwind CSS v4 utility classes.
-- Custom theme variables (like `--color-brand`) are defined in `src/styles/global.css`.
+- Custom theme variables are defined in `src/styles/global.css`, following a Claude-inspired color scheme (Terracotta brand color, deep dark background).
 - Prefer typography-focused design using the `@tailwindcss/typography` plugin for markdown content.
 
 ### Components
 - Use **Astro components** (`.astro`) for static parts and layouts.
 - Use **Svelte components** (`.svelte`) for interactive elements (e.g., `Navigation.svelte`).
+- Individual writing pages (`src/pages/writings/[slug].astro`) display publication date and an optional `lastUpdated` field.
 
 ### Icons
 - Icons are managed via `astro-icon` and Iconify sets (e.g., `@iconify-json/lucide`).

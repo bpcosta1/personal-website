@@ -1,0 +1,45 @@
+---
+const rules = [
+  { name: 'Allow HTTP', proto: 'TCP', port: '80', direction: 'Inbound' },
+  { name: 'Allow HTTPS', proto: 'TCP', port: '443', direction: 'Inbound' },
+  { name: 'Allow ICMP', proto: 'ICMP', port: 'Any', direction: 'Inbound' },
+  {
+    name: 'Implicit Deny',
+    proto: 'Any',
+    port: 'Any',
+    direction: 'Inbound',
+    action: 'Deny',
+  },
+];
+---
+
+<div
+  class="my-8 overflow-hidden rounded-lg border border-white/10 bg-white/5 font-mono text-xs"
+>
+  <div
+    class="grid grid-cols-4 bg-white/10 px-4 py-2 font-bold text-white uppercase tracking-wider"
+  >
+    <div>Name</div>
+    <div>Protocol</div>
+    <div>Port</div>
+    <div>Action</div>
+  </div>
+  <div class="divide-y divide-white/5">
+    {
+      rules.map((rule) => (
+        <div class="grid grid-cols-4 px-4 py-3 items-center">
+          <div class="text-white font-medium">{rule.name}</div>
+          <div class="text-text-main/70">{rule.proto}</div>
+          <div class="text-text-main/70">{rule.port}</div>
+          <div>
+            <span
+              class={`px-2 py-0.5 rounded ${rule.action === 'Deny' ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}`}
+            >
+              {rule.action || 'Allow'}
+            </span>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</div>

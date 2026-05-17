@@ -1,0 +1,29 @@
+---
+interface Props {
+  type?: 'info' | 'warning' | 'tip';
+  title?: string;
+}
+
+const { type = 'info', title } = Astro.props;
+
+const colors = {
+  info: 'border-blue-500/50 bg-blue-500/5',
+  warning: 'border-amber-500/50 bg-amber-500/5',
+  tip: 'border-emerald-500/50 bg-emerald-500/5',
+};
+---
+
+<div class={`my-6 px-5 py-4 border-l-4 rounded-r-lg ${colors[type]}`}>
+  <div class="flex gap-3 items-center mb-1">
+    {
+      title && (
+        <span class="font-bold text-white uppercase tracking-wider text-sm">
+          {title}
+        </span>
+      )
+    }
+  </div>
+  <div class="text-text-main/90 leading-relaxed italic">
+    <slot />
+  </div>
+</div>

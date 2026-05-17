@@ -2,13 +2,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: var(--color-amber-500);
+  --color-brand: #d97757;
 
   --font-serif: "Source Serif 4", serif;
   --font-mono: "JetBrains Mono", monospace;
 
-  --color-background-dark: #1a1a1a;
-  --color-text-main: var(--color-gray-300);
+  --color-background-dark: #111111;
+  --color-text-main: #e8e8e3;
 }
 
 @layer base {
@@ -31,5 +31,17 @@
 
   a {
     @apply text-brand transition-colors;
+  }
+
+  code,
+  .prose code {
+    @apply rounded bg-white/10 px-1.5 py-0.5 font-mono text-[0.9em] text-brand;
+    font-weight: 400 !important;
+  }
+
+  /* Remove Tailwind Typography's default backticks */
+  code::before,
+  code::after {
+    content: "" !important;
   }
 }

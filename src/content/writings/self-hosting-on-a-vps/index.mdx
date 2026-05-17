@@ -1,0 +1,106 @@
+---
+title: "Self-Hosting on a VPS"
+date: 2026-05-17
+description: "How I configured a my server to run my daily tools and web projects using Docker, Traefik, and Tailscale."
+readTime: 8
+draft: false
+tags: ["self-hosting", "docker", "tailscale", "traefik"]
+---
+import Callout from '../../../components/writings/Callout.astro';
+import FirewallTable from '../../../components/writings/FirewallTable.astro';
+
+Some time ago I purchased a VPS (Virtual Private Server) because I needed a server to host some web projects and also some cool services like a password manager or an ad blocker. This post explains the configuration of the server and also some concepts about the services I have running on it. Later on in the services section you'll also find a link to my Github repository where you can find the configuration files for all the services I mention here, but for now let's just start with the basics.
+
+## 1. Choosing the Provider, Machine and OS
+
+First step was choosing the provider and the machine to purchase. I chose the cheapest one you can get from Hetzner, you can check their available machines [here](https://www.hetzner.com/cloud/cost-optimized).
+
+As for the operating system, I'm running Ubuntu 24.04.3 LTS.
+
+Actually, when I first purchased the machine, I installed [Coolify](https://coolify.io/) on it. It's an open-source & self-hostable alternative to services like Vercel and Netlify.
+
+But recently I ditched Coolify in favour of managing everything directly with Docker and Docker Compose. Coolify is great, but it abstracts a lot of what's actually happening under the hood. I wanted to actually understand container networking, reverse proxies, etc. And honestly, even though I know I'm still just getting started, I would say I have learnt a few things since then.
+
+---
+
+## 2. Securing the Server
+
+Before running any services, I took some basic steps to secure my server.
+
+#### 1. User Management
+
+Created a non-root user with `sudo` privileges and migrated my SSH keys with permissions `700` for the `.ssh` directory and `600` for the `.ssh/authorized_keys` file.
+
+#### 2. SSH Hardening
+
+Edited `/etc/ssh/sshd_config` to explicitly disable `PermitRootLogin` and `PasswordAuthentication`. This ensures only key-based authentication is allowed for the non-root user.
+
+#### 3. Firewall
+
+Configured the Hetzner firewall with inbound rules limited to TCP 80 (HTTP), TCP 443 (HTTPS), and ICMP.
+
+<FirewallTable />
+
+#### 4. Intrusion Prevention
+
+Installed **[Fail2Ban](https://github.com/fail2ban/fail2ban)** to automatically block IP addresses with suspicious behaviour.
+
+---
+
+## 3. Container Engine, Reverse Proxy and VPN
+
+#### Docker
+
+I installed [Docker Engine](https://docs.docker.com/engine/) and Docker Compose, adding my non-root user to the `docker` group, and created a dedicated network called `proxy-network` to ensure strict routing.
+
+I used Docker to run each app in its own isolated container. But with this approach I needed a way to route requests to the right containers — that's where a reverse proxy comes into play.
+
+### Traefik
+
+A reverse proxy is more or less like a receptionist for your server. Instead of opening a dozen different ports for a dozen different apps, only [Traefik](https://traefik.io/traefik/) listens to requests on ports 80 and 443.
+
+<Callout>
+I chose Traefik over other solutions like Nginx or Apache because of its Dynamic Auto-Discovery. Traefik listens directly to the Docker socket, so whenever I spin up a new container, it automatically builds the routing rules — no need to manually edit config files or restart anything.
+</Callout>
+
+Additionally, I set up Traefik with the Cloudflare API to perform a DNS Challenge. This allows it to automatically fetch and renew Let's Encrypt SSL certificates, even for internal services that are completely blocked from the public internet.
+
+### Tailscale
+
+You're probably wondering what I meant by "internal services that are completely blocked from the public internet". Well, that's where [Tailscale](https://tailscale.com) comes into play.
+
+I recently traded the full control of hosting [WG-Easy](https://github.com/wg-easy/wg-easy) for the convenience of Tailscale. It's built on top of WireGuard but adds features like NAT traversal and easier configuration.
+
+**No need to open a port in the firewall:** Tailscale uses advanced NAT traversal techniques, so my server can communicate securely with my devices without me having to open any extra ports.
+
+**Keeping my private services hidden:** Tailscale provides a private mesh VPN network, so when I create subdomains in Cloudflare for my tools, I point them to my server's Tailscale IP (`100.x.x.x`) instead of its actual public IP.
+
+To the outside world, these subdomains don't resolve to anything routable. Scanning my server's public IP reveals nothing but Traefik. But when I turn on Tailscale on my devices, I'm instantly placed into the mesh network, so when I type `vault.bpcosta.com` in my browser, I can access my service, fully secured with HTTPS, without it ever being exposed to the internet.
+
+You might ask: do you have to have the VPN on all the time, and doesn't that slow your connection down or route everything through your server? Having Tailscale turned on doesn't mean your traffic exits through the VPS. Your traffic always goes out through the device you're using, unless you explicitly toggle the option to use one of the devices as an exit node.
+
+---
+
+## 4. My Tool Stack
+
+With the base configuration and security done, I started installing my tools and services. All the `docker-compose.yaml` files for everything below are available in my [GitHub repository](https://github.com/YOUR-USERNAME/vps-config).
+
+### [Vaultwarden](https://github.com/dani-garcia/vaultwarden)
+
+Vaultwarden is essentially a self-hostable version of [Bitwarden](https://bitwarden.com), compatible with all official Bitwarden clients like the browser extension and mobile app.
+
+I actually switched from Bitwarden to Vaultwarden not because I wanted to self-host it, but because it unlocks certain features that are paid in the original Bitwarden.
+
+### [AdGuard Home](https://github.com/AdguardTeam/AdGuardHome)
+
+AdGuard Home is a network-wide DNS sinkhole. The way I have it set up, my Tailscale network uses the VPS as its DNS server so every device connected to the VPN benefits from the filtering.
+
+### [Syncthing](https://syncthing.net/)
+
+Syncthing is a decentralized, peer-to-peer file synchronization tool. I use it mostly to keep my [Obsidian](https://obsidian.md) vault synced across my phone and laptop.
+
+### [Termix](https://github.com/lukegus/termix)
+
+Termix is a web-based SSH client. Whenever I need to run something on the go, I just open my browser, connect through the VPN, and I have a terminal ready to use.
+
+**Note:** I do have some other services running, but these are the ones I found more relevant. Anyways, if you're interested, you can check out my [repository](https://github.com/YOUR-USERNAME/vps-config) for all of the services configs.
