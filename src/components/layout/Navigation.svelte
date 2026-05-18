@@ -19,6 +19,13 @@
   const [send, receive] = crossfade({
     duration: 300,
     easing: cubicOut,
+    fallback(node, params) {
+      return {
+        duration: 300,
+        easing: cubicOut,
+        css: (t) => `opacity: ${t}`
+      };
+    }
   });
 
   const links = [
@@ -38,6 +45,7 @@
     {@const active = isActive(link.href, currentPath)}
     <a
       href={link.href}
+      onclick={() => currentPath = link.href}
       class="relative transition-all hover:text-brand {active
         ? 'text-white'
         : 'text-text-main'}"
