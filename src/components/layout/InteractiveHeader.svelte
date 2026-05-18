@@ -10,8 +10,8 @@
   <header
     class="flex items-center justify-between font-mono text-md transition-all duration-300
     {isScrolled
-      ? 'bg-zinc-950/80 backdrop-blur-md border border-brand/50 shadow-lg shadow-brand/5 rounded-full px-8 py-3 -mx-8'
-      : 'bg-transparent border-transparent px-4 py-4 -mx-16'}"
+      ? 'bg-zinc-950/80 backdrop-blur-md border border-brand/50 shadow-lg shadow-brand/5 rounded-full px-6 py-3 mx-0 sm:-mx-4 md:-mx-8 md:px-8'
+      : 'bg-transparent border-transparent px-2 py-4 mx-0 sm:-mx-8 md:-mx-16 md:px-4'}"
   >
     {@render children()}
   </header>

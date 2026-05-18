@@ -26,11 +26,11 @@ const { Content } = await render(writing);
         <span aria-hidden="true">&larr;</span>
         Back to writings
       </a>
-      <h1 class="text-4xl font-bold mb-3">{writing.data.title}</h1>
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">{writing.data.title}</h1>
       <div
         class="flex flex-col gap-1 text-sm font-mono text-text-main/60 mb-4"
       >
-        <div class="flex items-center gap-4">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
           <span>{writing.data.readTime} min read</span>
           <time>
             {
