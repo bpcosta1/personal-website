@@ -13,6 +13,9 @@ import mdx from '@astrojs/mdx';
 export default defineConfig({
   site: 'https://bpcosta.com',
   integrations: [svelte(), sitemap(), icon(), mdx()],
+  server: {
+    host: '127.0.0.1',
+  },
 
   vite: {
     plugins: [

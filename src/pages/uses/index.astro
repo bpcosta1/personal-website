@@ -1,12 +1,195 @@
 ---
-import Layout from '../../layouts/Layout.astro';
+import Layout from "../../layouts/Layout.astro";
+import { Icon } from "astro-icon/components";
+
+const categories = [
+    {
+        name: "Development Environment",
+        items: [
+            {
+                name: "Zed",
+                href: "https://zed.dev/",
+                description:
+                    "Primary IDE when I want a fast, focused editing experience.",
+                icon: "simple-icons:zedindustries",
+            },
+            {
+                name: "VS Code",
+                href: "https://code.visualstudio.com/",
+                description:
+                    "The fallback IDE for extensions, workflows, and familiar muscle memory.",
+                icon: "simple-icons:visualstudiocode",
+            },
+            {
+                name: "Codex",
+                href: "https://chatgpt.com/",
+                description:
+                    "Main coding agent I use. I pay for ChatGPT Plus and rely on Codex first. I occasionally use other agents like OpenCode, Antigravity or Gemini CLI.",
+                icon: "simple-icons:openai",
+            },
+        ],
+    },
+    {
+        name: "Desktop Environment",
+        items: [
+            {
+                name: "Arch Linux",
+                href: "https://archlinux.org/",
+                description: "Linux distribution.",
+                icon: "simple-icons:archlinux",
+            },
+            {
+                name: "GNOME",
+                href: "https://www.gnome.org/",
+                description: "Main desktop environment with Wayland.",
+                icon: "simple-icons:gnome",
+            },
+            {
+                name: "KDE Plasma",
+                href: "https://kde.org/plasma-desktop/",
+                description:
+                    "Another desktop environment. I use it X11 for gaming since GNOME no longer supports X11 on Arch.",
+                icon: "simple-icons:kde",
+            },
+            {
+                name: "Ghostty",
+                href: "https://ghostty.org/",
+                description: "Terminal emulator.",
+                icon: "simple-icons:ghostty",
+            },
+            {
+                name: "Google Chrome",
+                href: "https://www.google.com/chrome/",
+                description: "Main browser.",
+                icon: "simple-icons:googlechrome",
+            },
+        ],
+    },
+    {
+        name: "Networking & Infrastructure",
+        items: [
+            {
+                name: "Hetzner",
+                href: "https://www.hetzner.com/",
+                description: "Cloud provider.",
+                icon: "simple-icons:hetzner",
+            },
+            {
+                name: "Namecheap",
+                href: "https://www.namecheap.com/",
+                description: "To buy domains.",
+                icon: "simple-icons:namecheap",
+            },
+            {
+                name: "Cloudflare",
+                href: "https://www.cloudflare.com/",
+                description: "To manage DNS and SSL certificates.",
+                icon: "simple-icons:cloudflare",
+            },
+            {
+                name: "Tailscale",
+                href: "https://tailscale.com/",
+                description:
+                    "Private networking between my devices and servers.",
+                icon: "simple-icons:tailscale",
+            },
+        ],
+    },
+    {
+        name: "Self-hosted",
+        items: [
+            {
+                name: "Vaultwarden",
+                href: "https://github.com/dani-garcia/vaultwarden",
+                description: "Self-hosted password manager.",
+                icon: "simple-icons:bitwarden",
+            },
+            {
+                name: "AdGuard Home",
+                href: "https://adguard.com/en/adguard-home/overview.html",
+                description: "DNS-based ad blocking.",
+                icon: "simple-icons:adguard",
+            },
+            {
+                name: "Syncthing",
+                href: "https://syncthing.net/",
+                description: "File synchronization across my devices.",
+                icon: "simple-icons:syncthing",
+            },
+            {
+                name: "Termix",
+                href: "https://termix.site/",
+                description: "Self-hosted SSH and remote server management.",
+                icon: "simple-icons:termius",
+            },
+        ],
+    },
+    {
+        name: "Others",
+        items: [
+            {
+                name: "Obsidian",
+                href: "https://obsidian.md/",
+                description: "Note-taking and knowledge base.",
+                icon: "simple-icons:obsidian",
+            },
+        ],
+    },
+];
 ---
 
 <Layout title="Uses">
-  <section class="space-y-8">
-    <div class="mb-12">
-      <h1 class="text-5xl font-bold mb-2">Uses</h1>
-      <p class="text-text-main/80">In progress...</p>
-    </div>
-  </section>
+    <section class="max-w-4xl mx-auto space-y-12 pb-16">
+        <div class="space-y-4">
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight">Uses</h1>
+            <p class="max-w-2xl text-lg leading-relaxed text-text-main/80">
+                A list of the tools, apps, and services I use on a daily basis.
+            </p>
+        </div>
+
+        <div class="space-y-16">
+            {
+                categories.map((category) => (
+                    <section class="space-y-6">
+                        <h2 class="border-b border-white/10 pb-2 text-2xl font-semibold text-white">
+                            {category.name}
+                        </h2>
+                        <div class="grid grid-cols-1 gap-4">
+                            {category.items.map((item) => (
+                                <div class="group flex items-start gap-4 rounded-2xl border border-white/8 bg-white/3 p-4 transition-all duration-300 hover:border-white/14 hover:bg-white/">
+                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/5 text-white/90 transition-colors group-hover:text-white">
+                                        {item.icon ? (
+                                            <Icon
+                                                name={item.icon}
+                                                class="h-6 w-6"
+                                            />
+                                        ) : (
+                                            <span class="text-[10px] font-mono uppercase tracking-[0.2em] text-white/80">
+                                                OC
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div class="min-w-0 space-y-1">
+                                        <h3 class="text-lg font-medium text-white">
+                                            <a
+                                                href={item.href}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                class="hover:text-brand transition-colors"
+                                            >
+                                                {item.name}
+                                            </a>
+                                        </h3>
+                                        <p class="text-sm leading-relaxed text-text-main/70">
+                                            {item.description}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                ))
+            }
+        </div>
+    </section>
 </Layout>
