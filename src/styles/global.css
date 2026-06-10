@@ -46,6 +46,10 @@
         @apply bg-background-dark text-text-main font-serif antialiased selection:bg-brand/30;
     }
 
+    #astro-route-announcer {
+        @apply bg-background-dark;
+    }
+
     h1,
     h2,
     h3,
