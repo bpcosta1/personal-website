@@ -2,46 +2,77 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #d97757;
+    --color-brand: #d97757;
 
-  --font-serif: "Source Serif 4", serif;
-  --font-mono: "JetBrains Mono", monospace;
+    --font-serif: "Source Serif 4", serif;
+    --font-mono: "JetBrains Mono", monospace;
 
-  --color-background-dark: #111111;
-  --color-text-main: #e8e8e3;
+    --color-background-dark: #111111;
+    --color-text-main: #e8e8e3;
 }
 
 @layer base {
-  html {
-    @apply overflow-y-scroll overflow-x-hidden;
-  }
+    html {
+        @apply overflow-y-scroll overflow-x-hidden bg-background-dark;
+        --page-gutter: 1rem;
+        --header-bleed: 0.5rem;
+        --header-edge-gap: 0.75rem;
+    }
 
-  body {
-    @apply bg-background-dark text-text-main font-serif antialiased selection:bg-brand/30;
-  }
+    @media (min-width: 640px) {
+        html {
+            --page-gutter: 1.5rem;
+            --header-bleed: 0.75rem;
+            --header-edge-gap: 1rem;
+        }
+    }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply text-white;
-  }
+    @media (min-width: 768px) {
+        html {
+            --page-gutter: 2rem;
+            --header-bleed: 1.25rem;
+            --header-edge-gap: 0.75rem;
+        }
+    }
 
-  a {
-    @apply text-brand transition-colors;
-  }
+    @media (min-width: 1024px) {
+        html {
+            --header-bleed: 3rem;
+            --header-edge-gap: 0rem;
+        }
+    }
 
-  code,
-  .prose code {
-    @apply rounded bg-white/10 px-1.5 py-0.5 font-mono text-[0.9em] text-brand;
-    font-weight: 400 !important;
-  }
+    body {
+        @apply bg-background-dark text-text-main font-serif antialiased selection:bg-brand/30;
+    }
 
-  /* Remove Tailwind Typography's default backticks */
-  code::before,
-  code::after {
-    content: "" !important;
-  }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply text-white;
+    }
+
+    a {
+        @apply text-brand transition-colors;
+    }
+
+    code,
+    .prose code {
+        @apply rounded bg-white/10 px-1.5 py-0.5 font-mono text-[0.9em] text-brand;
+        font-weight: 400 !important;
+    }
+
+    /* Remove Tailwind Typography's default backticks */
+    code::before,
+    code::after {
+        content: "" !important;
+    }
+
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        @apply bg-background-dark;
+    }
 }
