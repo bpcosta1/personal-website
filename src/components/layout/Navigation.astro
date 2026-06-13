@@ -1,0 +1,43 @@
+---
+const pathname = Astro.url.pathname;
+
+const links = [
+    { href: "/", label: "Me" },
+    { href: "/uses", label: "Uses" },
+    { href: "/writings", label: "Writings" },
+];
+
+function isActive(href: string, path: string) {
+    if (href === "/") return path === "/";
+    return path === href || path.startsWith(`${href}/`);
+}
+---
+
+<nav class="flex gap-4">
+    {
+        links.map((link) => {
+            const active = isActive(link.href, pathname);
+
+            return (
+                <a
+                    href={link.href}
+                    class:list={[
+                        "relative transition-colors hover:text-brand",
+                        active ? "text-white" : "text-text-main",
+                    ]}
+                >
+                    {link.label}
+                    {
+                        active && (
+                            <span
+                                transition:name="active-nav-indicator"
+                                aria-hidden="true"
+                                class="absolute -bottom-2 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-brand"
+                            />
+                        )
+                    }
+                </a>
+            );
+        })
+    }
+</nav>
