@@ -1,17 +1,14 @@
 ---
 import { Icon } from 'astro-icon/components';
 import InteractiveHeader from './InteractiveHeader.svelte';
-import Navigation from './Navigation.svelte';
-
-const pathname = Astro.url.pathname;
+import Navigation from './Navigation.astro';
 ---
 
 <InteractiveHeader
     client:load
     transition:name="header"
-    transition:persist="header"
 >
-    <Navigation client:load initialPath={pathname} />
+    <Navigation />
     <div class="flex gap-4 items-center text-text-main">
         <a
             href="https://github.com/bpcosta1"
