@@ -21,7 +21,7 @@ const latestWritings = allWritings
       latestWritings.map((writing) => (
         <article class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 group">
           <a
-            href={`/writings/${writing.id.replace(/\/index$/, '')}`}
+            href={`/writings/${writing.id.replace(/\/index$/, '')}/`}
             class="text-lg text-white group-hover:text-brand transition-colors"
           >
             {writing.data.title}
@@ -34,7 +34,7 @@ const latestWritings = allWritings
     }
   </div>
   <div class="mt-6">
-    <a href="/writings" class="text-brand hover:underline font-mono text-sm"
+    <a href="/writings/" class="text-brand hover:underline font-mono text-sm"
       >View all posts &rarr;</a
     >
   </div>

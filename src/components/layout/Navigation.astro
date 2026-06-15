@@ -3,13 +3,21 @@ const pathname = Astro.url.pathname;
 
 const links = [
     { href: "/", label: "Me" },
-    { href: "/uses", label: "Uses" },
-    { href: "/writings", label: "Writings" },
+    { href: "/uses/", label: "Uses" },
+    { href: "/writings/", label: "Writings" },
 ];
 
+function normalizePath(path: string) {
+    if (path === "/") return path;
+    return path.replace(/\/$/, "");
+}
+
 function isActive(href: string, path: string) {
-    if (href === "/") return path === "/";
-    return path === href || path.startsWith(`${href}/`);
+    const normalizedHref = normalizePath(href);
+    const normalizedPath = normalizePath(path);
+
+    if (normalizedHref === "/") return normalizedPath === "/";
+    return normalizedPath === normalizedHref || normalizedPath.startsWith(`${normalizedHref}/`);
 }
 ---
 
